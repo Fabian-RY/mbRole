@@ -27,6 +27,14 @@ def _parse_CHEBI_id_from_url(url: str) -> str:
     return url.split("/")[-1]
 
 def initialize_logger(default_logging_level: str) -> logging.Logger:
+    """
+        Start the logging system
+
+        The goal is to have one logger per database, so parallel works can be done.
+
+        Each logger should be identified properly and the database which the thread is parsing. Each logger
+        may have different logging level.
+    """
     logging_level:str = 0
     match default_logging_level:
         case "debug": 
@@ -69,24 +77,56 @@ def initialized_db(file: str) -> bool:
     return True
 
 def initialize_db(file: str, table_name:str) -> int:
+    """
+        Creates the SQLite file and the table for mbrole
+        The table has these columns:
+            - compound: the name of the compound. For testing purposes, max length is 20.
+            - annotation: the field to which the compound is part of, for the enrichment analysis.
+            - database: the source for the compound name and annotation
+            - URL: officuak URL for compound info,
+    """
     conn = sqlite3.connect(file)
     cursor = conn.cursor()
     cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (compound VARCHAR(20), annotation VARCHAR(50), database VARCHAR(20), URL VARCHAR(100) );")
     conn.close()
-    return 0
+    return 0 # 0 means success. It does not check if the file cannot exist, as the function initialized_db checked that.
 
 def load_chebi_data(file:str):
+    """
+        Loads the chebi ontology from th official JSON file from: https://ftp.ebi.ac.uk/pub/databases/chebi/ontology/
+        As it can be either json, or json.gz, the correct function is determined according to the file extension.
+
+        IMPROVEMENT TODO: check mimetype instead and handle errors accordingly.
+    """
     open_function = gzip.open if file.endswith(".json.gz") else open
     fhand = open_function(file, 'rt')
     return json.load(fhand)
 
 def parse_chebi(data: str) -> tuple[str,str]:
+    """
+        Parses the preloaded chebi data. Gets 2 fields:
+        - sub: ID of a compound
+        - obj: ID of a category to which sub is ontologically related.
+
+        TODO: 
+            - keep the type of relation they have (E.j: is_a, has_role, etc)
+            - Maybe it would be faster if data was only the relations that is calculated
+            on the first line of the function.
+    """
     relations = data["graphs"][0]["edges"]
     for relation in relations:
         sub, obj = _parse_CHEBI_id_from_url(relation["sub"]), _parse_CHEBI_id_from_url(relation["obj"])
         yield (sub, obj)
 
 def _get_obj_name(chebi_id: str, chebi_data:dict) -> dict:
+    """
+        Filters the whole chebi data, to get just the node with the given id.
+
+        Then, returns the label. 
+        
+        TODO: Note that the label is not guaranteed to exist, but in practice,
+        exists for all categories or compounds we need
+    """
     node = next(filter(lambda x: x["id"] == f"http://purl.obolibrary.org/obo/{chebi_id}", chebi_data))
     return node["lbl"]
 

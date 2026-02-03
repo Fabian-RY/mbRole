@@ -15,11 +15,14 @@ def _parse_arguments() -> argparse.Namespace:
 
     """
     parser: argparse.ArgumentParser = argparse.ArgumentParser("mbRole")
-    parser.add_argument("--compound","-i", type=argparse.FileType('r'), help="Path to a file containing a set of compounds. One compound per line.", required=True)
+    parser.add_argument("--compound","-i", type=str, help="Path to a file containing a set of compounds. One compound per line.", required=True)
+    parser.add_argument("--output","-o", type=str, help="Path to a file to store results. CSV format", default="/dev/stdout")
     parser.add_argument("--db_file","-dbf", type=str, help="Path to a SQLite database file containing annotation.", required=True)
     parser.add_argument("--annotation","-a", nargs="*", type=str, help="Annotation to make the enrichment analysis to", default="")
     parser.add_argument("--background","-bg", type=argparse.FileType('r'), help="(Optional) Path to a file containing background compounds. One compound per line. If no value indicated, the compouns on all annotation sets will be used as background", required=False)
-    parser.add_argument("--database", "-db", type=str, nargs="+", help="Database from which the annotations are used, stored in db. More than one can be used. Non case sensitive", required=True)
+    parser.add_argument("--database", "-db", type=str, nargs="+", help="Source database from which the annotations are used, stored in db. More than one can be used. Non case sensitive", default=[])
     parser.add_argument("--loglevel", "-l", type=str, choices=["debug","info","warning","error","critical"], help="Miminal log level to report", default="info")
     parser.add_argument("--logfile", "-lf", type=str, help="File path to store logs")
+    parser.add_argument("--table", "-t", type=str, help="Table used in the db to store annotations")
+    parser.add_argument("--all", "-all", action="store_true", default=False, help="Use this flag to print all categories, and not only those that are statistically significant")
     return parser.parse_args()

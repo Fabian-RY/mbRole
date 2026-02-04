@@ -25,4 +25,5 @@ def _parse_arguments() -> argparse.Namespace:
     parser.add_argument("--logfile", "-lf", type=str, help="File path to store logs")
     parser.add_argument("--table", "-t", type=str, help="Table used in the db to store annotations")
     parser.add_argument("--all", "-all", action="store_true", default=False, help="Use this flag to print all categories, and not only those that are statistically significant")
+    parser.add_argument("--pval","-pv", type=float, default=0.05, help="Maximum pvalue to filter. Does nothing if --all is used")
     return parser.parse_args()

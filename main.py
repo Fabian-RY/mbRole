@@ -125,10 +125,8 @@ def main():
     # Pandas makes easy to work with the table.
     df = pd.DataFrame(result, columns=["name","pval","Compund-in-set","Compound-in-annotation"])
     df["FDR"] = scipy.stats.false_discovery_control(df["pval"])
-    print(sum(df["pval"] < 0.05))
     if (not args.all):
-        df = df[df["FDR"] < 0.05]
-    print(df[df["name"] == "refrigerant"])
+        df = df[df["FDR"] < args.pval]
     df.to_csv(args.output)
 
 

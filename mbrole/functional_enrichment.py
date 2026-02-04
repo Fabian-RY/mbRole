@@ -17,34 +17,35 @@ def get_category_compounds(conn: sqlite3.Connection, category: str) -> list[str]
 
 def get_all_categories_from_db(conn: sqlite3.Connection, table:str):
     SQL = f"SELECT DISTINCT annotation FROM {table};"
-    logging.debug(SQL)
+    #logging.debug(SQL)
     cursor = conn.cursor()
     cursor.execute(SQL)
     return [x[0] for x in cursor.fetchall()]
 
 def get_categories_from_db(conn: sqlite3.Connection, table: str, db:str, annotation:str) -> set:
     SQL = f"SELECT compound FROM {table} WHERE database=\"{db}\" AND annotation=\"{annotation.lower()}\";"
-    logging.debug(SQL)
+    #logging.debug(SQL)
     cursor = conn.cursor()
     cursor.execute(SQL)
     return {x[0] for x in cursor.fetchall()}
 
 def get_genes_per_category(conn, table, db):
     SQL = f"SELECT * FROM {table} WHERE database=\"{db}\";"
-    logging.debug(SQL)
+    #logging.debug(SQL)
     cursor = conn.cursor()
     cursor.execute(SQL)
     categories = collections.defaultdict(list)
     for compound in cursor.fetchall():
-        logging.debug(compound)
+        #logging.debug(compound)
         categories[compound[1]].append(compound[0])
     return categories
 
-def get_background_genes_from_db(conn: sqlite3.Connection, table:str, db: str):
+def get_background_genes_from_db(conn: sqlite3.Connection, table:str):
     """
         
     """
-    SQL = f"SELECT compound FROM {table} WHERE database=\"{db}\""
+    SQL = f"SELECT compound FROM {table};"
+    logging.info(SQL)
     cursor = conn.cursor()
     cursor.execute(SQL)
     return {x[0] for x in cursor.fetchall()}
@@ -56,8 +57,8 @@ def functional_enrichment(genes_in_query: set, genes_in_category:set, background
 
         Returns uncorrected p-value
     """
-    logging.debug(f"Genes in query: {genes_in_query}")
-    logging.debug(f"Genes in category: {genes_in_category}")
+    # logging.debug(f"Genes in query: {genes_in_query}")
+    # logging.debug(f"Genes in category: {genes_in_category}")
     genes_from_query_in_set = len(genes_in_query.intersection(genes_in_category))
     if(genes_from_query_in_set == 0):
         # No genes in query, skipping

@@ -3,6 +3,11 @@
 """
     This software is a command-line interface reimplementation of mbRole
 
+    It performs a Functional Enrichment of the list of metabolites providen,
+    agains a user-database of compounds and annotations
+
+    Generates a csv file (exported from a pandas dataframe) with the result of the different 
+    Functional enrichment provided
 
 """
 
@@ -10,7 +15,6 @@ import logging
 import sqlite3
 import sys
 
-import numpy as np
 import pandas as pd
 import scipy
 import tqdm
@@ -18,7 +22,7 @@ import tqdm
 import mbrole.arg_parse
 import mbrole.functional_enrichment
 
-def get_bg_set(bg_arg:str, table:str, db:str) -> list:
+def get_bg_set(bg_arg:str, table:str, db:str) -> set:
     if bg_arg:
         return parse_input_file(bg_arg)
     return mbrole.functional_enrichment.get_background_genes_from_db(sqlite3.Connection(db), table)
@@ -53,10 +57,10 @@ def set_logger(name:str, file:str, log_level:int) -> logging.Logger:
                     level=logging_level)
     return logging.getLogger(name)
 
-def _perform_FE(category: set, query_set:set, bg_set:set, annotation:str) -> float:
+def _perform_FE(category: set, query_set:set, bg_set:set, annotation:str) -> tuple[float, int, int]:
     #annotation = mbrole.functional_enrichment.get_categories_from_db(conn, table, db, category)
     logging.debug(f"Performing FE for {category}: bg of {len(bg_set)}")
-    res = mbrole.functional_enrichment.functional_enrichment(query_set, annotation, bg_set) 
+    res:tuple = mbrole.functional_enrichment.functional_enrichment(query_set, annotation, bg_set) 
     if (res is None):
         return
     pval, in_set, in_annotation = res
@@ -123,13 +127,11 @@ def main():
         result.append((annotation_name, pval, in_set, in_annotation))
     
     # Pandas makes easy to work with the table.
-    df = pd.DataFrame(result, columns=["name","pval","Compund-in-set","Compound-in-annotation"])
+    df:pd.DataFrame = pd.DataFrame(result, columns=["name","pval","Compund-in-set","Compound-in-annotation"])
     df["FDR"] = scipy.stats.false_discovery_control(df["pval"])
     if (not args.all):
-        df = df[df["FDR"] < args.pval]
+        df:pd.DataFrame = df[df["FDR"] < args.pval]
     df.to_csv(args.output)
-
-
-    
+  
 if __name__ == "__main__":
     main()

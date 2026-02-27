@@ -124,14 +124,14 @@ def main():
         pval, in_set, in_annotation = _perform_FE(annotation_name, query_set, bg_set, annotation[annotation_name])
         if (pval is None):
             pval = 1
-        result.append((annotation_name, pval, in_set, in_annotation))
+        result.append((annotation_name, in_set, in_annotation, pval))
     
     # Pandas makes easy to work with the table.
-    df:pd.DataFrame = pd.DataFrame(result, columns=["name","pval","Compund-in-set","Compound-in-annotation"])
+    df:pd.DataFrame = pd.DataFrame(result, columns=["name","Compund-in-set","Compound-in-annotation", "pval"])
     df["FDR"] = scipy.stats.false_discovery_control(df["pval"])
     if (not args.all):
         df:pd.DataFrame = df[df["FDR"] < args.pval]
-    df.to_csv(args.output)
+    df.to_csv(args.output, index=False)
   
 if __name__ == "__main__":
     main()

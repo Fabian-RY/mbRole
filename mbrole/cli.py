@@ -128,6 +128,8 @@ def main():
     
     # Pandas makes easy to work with the table.
     df:pd.DataFrame = pd.DataFrame(result, columns=["name","Compund-in-set","Compound-in-annotation", "pval"])
+    df["pval"] = df["pval"].astype(float)
+    logging.info(df)
     df["FDR"] = scipy.stats.false_discovery_control(df["pval"])
     if (not args.all):
         df:pd.DataFrame = df[df["FDR"] < args.pval]

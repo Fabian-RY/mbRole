@@ -65,12 +65,13 @@ def initialize_db(file: str, table_name:str) -> int:
 def connect_to_db(file: str, db:str) -> sqlite3.Connection:
     pass
 
-def parse_reactome(file: str):
+def parse_reactome(file: str, sep="\t", filter_organisms="Homo sapiens"):
     with open(file) as fhand:
         for line in fhand:
             line = line.strip("\n")
-            data = line.split("\t")
-            yield (data[0], data[1], "reactome")
+            data = line.split(sep)
+            if(data[-1] == filter_organisms):
+                yield (f"CHEBI_{data[0]}", data[3], "Reactome","Chebi")
     pass
 
 def main() -> None:
@@ -78,8 +79,9 @@ def main() -> None:
     logger: logging.Logger = initialize_logger(args.log_level)
     if (not initialized_db(args.file)):
         logger.info(f" Database {args.file} does not exist. Initializing database with table name {args.db_name}.")
-        initialized_db(args.file)
-    parse_reactome
+        #initialized_db(args.file)
+    for data in parse_reactome(args.reactome):
+        print(f"\"{data[0]}\",\"{data[1]}\",\"{data[3]}\",\"{data[2]}\"")
     pass
 
 if __name__ == "__main__":

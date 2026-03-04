@@ -12,3 +12,10 @@ dependencies = [
     "scipy>=1.16.3",
     "tqdm>=4.67.1",
 ]
+
+[project.scripts]
+mbrole-cli="mbrole.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Fabian-RY/mbRole"
+Issues = "https://github.com/Fabian-RY/mbRole/issues"

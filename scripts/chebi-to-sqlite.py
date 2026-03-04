@@ -115,8 +115,11 @@ def parse_chebi(data: str) -> tuple[str,str]:
     """
     relations = data["graphs"][0]["edges"]
     for relation in relations:
+        logging.debug(relation)
         sub, obj = _parse_CHEBI_id_from_url(relation["sub"]), _parse_CHEBI_id_from_url(relation["obj"])
-        yield (sub, obj)
+        if (relation["pred"] == "is_a"):
+            # is_a is the indication for the roles in the ontology
+            yield (sub, obj)
 
 def _get_obj_name(chebi_id: str, chebi_data:dict) -> dict:
     """
@@ -141,9 +144,9 @@ def _get_chebi_nodes(chebi_data: dict) -> dict[str, str]:
             continue
     return chebi_nodes
 
-def insert_into_db(table_name: str, compound: str, annotation: str, database: str, url: str, connection:sqlite3.Connection) -> None:
+def insert_into_db(table_name: str, compound: str, annotation: str, category:str, database: str, url: str, connection:sqlite3.Connection) -> None:
     cursor = connection.cursor()
-    cursor.execute(f"INSERT INTO {table_name} (compound, annotation, database, URL) VALUES (?, ?, ?, ?);", (compound, annotation, database, url))
+    cursor.execute(f"INSERT INTO {table_name} (compound, annotation, category, database, URL) VALUES (?, ?, ?, ?, ?);", (compound, annotation, category, database, url))
     connection.commit()
     cursor.close()
 
@@ -165,7 +168,7 @@ def main() -> None:
         sub, sub_url = chebi_nodes[sub]
         logger.debug(f"Obtained relation: {sub} -> {obj}")
         logger.debug(f"Inserting relation: {sub} -> {obj} into database {args.file}.")
-        insert_into_db(args.db_name, sub, obj, "CHEBI", sub_url, connection)
+        insert_into_db(args.db_name, sub, obj, "Chebi role", "CHEBI", sub_url, connection)
 
 if __name__ == "__main__":
     main()

@@ -87,7 +87,7 @@ def initialize_db(file: str, table_name:str) -> int:
     """
     conn = sqlite3.connect(file)
     cursor = conn.cursor()
-    cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (compound VARCHAR(20), annotation VARCHAR(50), database VARCHAR(20), URL VARCHAR(100) );")
+    cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (compound VARCHAR(20), annotation VARCHAR(50), category VARCHAR(50), database VARCHAR(20), URL VARCHAR(100) );")
     conn.close()
     return 0 # 0 means success. It does not check if the file cannot exist, as the function initialized_db checked that.
 
@@ -165,7 +165,7 @@ def main() -> None:
     connection = sqlite3.connect(args.file)
     for sub, obj in tqdm.tqdm(parsed_data):
         obj, obj_url = chebi_nodes[obj]
-        sub, sub_url = chebi_nodes[sub]
+        sub_url = chebi_nodes[sub][1]
         logger.debug(f"Obtained relation: {sub} -> {obj}")
         logger.debug(f"Inserting relation: {sub} -> {obj} into database {args.file}.")
         insert_into_db(args.db_name, sub, obj, "Chebi role", "CHEBI", sub_url, connection)

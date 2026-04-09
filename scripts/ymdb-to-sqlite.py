@@ -22,7 +22,7 @@ def parse_ymdb(file: str):
         yield key
 
 def _save_to_sqlite(conn, table, id, name, db, url, category):
-    SQL = f"INSERT INTO {table} (compound, annotation, database, url) VALUES  (\"{id}\", \"{name}\", \"{db}\", \"{url}\");"
+    SQL = f"INSERT INTO {table} (compound, annotation, category, database, url) VALUES  (\"{id}\", \"{name}\", \"{category}\", \"{db}\", \"{url}\");"
     cursor = conn.cursor()
     cursor.execute(SQL)
     conn.commit()
@@ -35,7 +35,7 @@ def main():
         if "pathways" in compound and compound["pathways"]:
             pathways = compound["pathways"]
             for pathway in pathways:
-                _save_to_sqlite(conn, args.db_table, compound[args.id_tag], pathway["name"], args.db_name, compound[args.id_tag], f"{args.db_name}_pathways")
+                _save_to_sqlite(conn, args.db_table, compound[args.id_tag], pathway["name"], args.db_name, compound[args.id_tag], "pathways")
         if "location" in compound and compound["location"]:
             location = compound["location"]
             if(";" in compound["location"]):
@@ -44,7 +44,7 @@ def main():
             else:
                 location = [location]
             for element in location:
-                _save_to_sqlite(conn, args.db_table, compound[args.id_tag], element, args.db_name, compound[args.id_tag], f"{args.db_name}_location")
+                _save_to_sqlite(conn, args.db_table, compound[args.id_tag], element, args.db_name, compound[args.id_tag], "location")
     conn.close
     
 

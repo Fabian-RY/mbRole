@@ -44,7 +44,8 @@ def main():
     fout = open(args.output, "wt")
     for pathway, molecules in data:
         for molecule in molecules:
-            print(f"{molecule},{pathway},Wikipathways,WikiPathWays", file=fout)
+            molecule = " ".join(molecule.strip("\n").split()) # For some reason some spaces are interpreted as new lines
+            print(f"\"{molecule}\",\"{pathway}\",\"Wikipathways\",\"WikiPathWays\"", file=fout)
 
 
 if __name__=="__main__":
